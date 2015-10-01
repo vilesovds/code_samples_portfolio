@@ -1,0 +1,106 @@
+8
+
+dir
+346
+http://ext.lcl.loc:8080/svn/elsiel/Projects/MSP430_with_MUX
+http://ext.lcl.loc:8080/svn/elsiel
+
+
+
+2009-09-21T10:57:21.402126Z
+318
+lcl\x5cd.vilesov
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+72db7490-05ba-e442-9697-6553f629820f
+
+settings
+dir
+
+msp430.ewp
+file
+
+
+
+
+2010-05-04T13:49:16.188958Z
+e043aad6e7288b6451dfb025c0319086
+2009-03-19T13:40:55.808933Z
+287
+LCL\x5cd.vilesov
+
+msp430.ewd
+file
+
+
+
+
+2010-05-04T13:49:16.204582Z
+cf604dbdd4434cc2608788e462e38e3c
+2009-03-19T13:40:55.808933Z
+287
+LCL\x5cd.vilesov
+
+main.cpp
+file
+
+
+
+
+2010-05-04T13:49:16.220207Z
+8ee20651c4624540c683225498302fc8
+2009-09-21T10:57:21.402126Z
+318
+lcl\x5cd.vilesov
+
+Debug
+dir
+
+msp430.eww
+file
+
+
+
+
+2010-05-04T13:49:16.235832Z
+ddd0f1918bfe4a9a3e8db8a851c0b026
+2009-03-19T13:40:55.808933Z
+287
+LCL\x5cd.vilesov
+
+read_me
+file
+
+
+
+
+2010-05-04T13:49:16.235832Z
+63c2fb7678dd199cbd005340572149c3
+2009-03-19T13:40:55.808933Z
+287
+LCL\x5cd.vilesov
+
+msp430.dep
+file
+
+
+
+
+2010-05-04T13:49:16.251457Z
+9a987297b43e5afadd07e6ef59362658
+2009-09-21T10:57:21.402126Z
+318
+lcl\x5cd.vilesov
+

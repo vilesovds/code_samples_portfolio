@@ -1,0 +1,6 @@
+setup adc
+    1001 xxxx
+          xxxx- число каналов от 0 до F
+get adc 
+    0110 yyyy
+          yyyy- номер канала

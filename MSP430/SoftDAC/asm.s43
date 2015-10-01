@@ -1,0 +1,221 @@
+;*******************************************************************************
+;   MSP430F20x3 DAC
+;
+;*******************************************************************************
+#include  "msp430x20x3.h"
+;-----------------------------------------------------------------------------
+
+#define P10 R5 ;ports
+#define P11 R6
+#define P12 R7
+#define P13 R8
+#define P14 R9
+#define P15 R10
+#define P16 R11
+#define P17 R12
+
+#define count R4
+
+#define addrB R13
+
+ORG 200h
+CountB DW 0
+controlBit DW 0
+ports DW 0
+In_PB DW 0
+;------------------------------------------------------------------------------
+          ORG 0F800h
+;-------------------------------------------------------------------------------
+main        mov.w   #280h,SP               ; Initialize stackpointer
+StopWDT     mov.w   #WDTPW+WDTHOLD,&WDTCTL  ; Stop WDT
+            mov.b   &CALDCO_16MHZ,&DCOCTL
+            mov.b   &CALBC1_16MHZ,&BCSCTL1
+            bic.b   #RSTIFG,IFG1
+SetupP1     clr.b     P1OUT; 
+            mov.b   #0FFh,&P1DIR            ; P1 output
+SetupP2     
+            
+            clr.b   P2OUT
+            clr.b   P2DIR      ;input
+            clr.b   P2SEL;
+            bis.b   #0C0h,&P2REN  ;pull-up
+            ;bis.b   #040h,&P2IE   ; interrupt P2.7
+            bic.b   #040h,&P2IES  ; low/hi transition
+            clr.b   P2IFG   ; Flag clear
+            ;==================  Инициализация
+            clr     count     ;counter
+            clr R14;
+            //--------------счётчиков ШИМа
+            clr P10;
+            clr P11;
+            clr P12;
+            clr P13;
+            clr P14;
+            clr P15;
+            clr P16;
+            clr P17;
+            clr CountB
+            clr R13
+            clr R15
+            ;---------------------------------
+SetupC0     mov.w   #CCIE,CCTL0            ; CCR0 interrupt enabled
+            mov.w   #70,CCR0            ;частота, минимум 60, а то
+                                        ;интеррапты не срабатывают
+SetupTA     mov.w   #TASSEL_2+MC_1,TACTL   ; SMCLK, upmode
+
+            
+
+            ;;
+            bis.w   #GIE,SR; global interrupt
+;//====================================================
+//            MAIN
+//=====================================================
+OtherLOOP   bit.b   #040h,P2IFG
+            JNZ   P2_ISR
+            jmp OtherLOOP
+//=====================================================
+//            Timer interrupt
+//=====================================================
+Mainloop   mov     #07Fh,R14
+;//------------------------------------            
+;port10
+            cmp       R5,count; equal?P1.0
+            jlo       port11; 
+            bic.b     #001h,R14
+
+//-------------------------------
+port11      cmp       P11,count;
+            jlo      port12;
+            bic.b     #002h,R14
+//----------------------------------
+
+//-------------------------------
+port12      cmp       P12,count;
+            jlo      port13;
+            bic.b     #004h,R14
+//----------------------------------
+port13      cmp       P13,count;
+            jlo        port14;
+            bic.b     #008h,R14
+//----------------------------------
+
+//-------------------------------
+port14      cmp       P14,count;
+            jlo       port15;
+            bic.b     #16,R14
+//----------------------------------
+
+//-------------------------------
+port15      cmp      P15,count;
+            jlo      port16;
+            bic.b     #32,R14
+//----------------------------------
+
+//-------------------------------
+port16      cmp       P16,count;
+            jlo       gotomain;;port17;
+            bic.b     #64,R14
+//----------------------------------
+
+//-------------------------------
+;port17      cmp       P17,count;
+            ;jlo       gotomain;
+            ;bic.b     #128,R14
+//----------------------------------
+gotomain    inc.w  count
+            cmp #0FFH, count
+            jne   MainEnd;Mainloop;
+L1     
+            clr     count     ;counter
+ 
+MainEnd     mov.b   P1OUT,R12
+            AND     #080h,R12
+            bis     R12, R14
+            mov.b   R14,P1OUT; out put
+            reti                                 
+;-------------------------------------------
+;Pseudo Interrupts
+;-------------------------------------------
+P2_ISR      ; R15 use as buffer
+            bit.b #080H,P2IN ;P2.7= 1 ?
+            jc setB      ;yes
+            BIC #1,R15      ;no
+            RLA R15
+            CMP #11,CountB
+            JEQ IncCount
+            xor #0,controlBit
+            jmp IncCount
+setB        
+            BIS #1,R15
+            RLA R15
+            CMP #11,CountB
+            JEQ IncCount
+            xor #1,controlBit
+            jmp IncCount
+
+IncCount    inc CountB;
+            cmp #12,CountB
+            jeq EndRec
+            jmp lEnd 
+EndRec
+            clr CountB
+            RRA R15
+            mov R15,In_PB
+            and #1,In_PB
+            CMP controlBit,In_PB; смотрим бит чётности
+            jeq ssss ; Совпал
+            CLR R15 ; не совпал
+            CLR controlBit
+            ;засветить светодиод
+ErrOn       mov.b #080h,P1OUT; ERR ON
+            ; зависон
+            bic.w   #GIE,SR; global interrupt
+            jmp ErrOn;
+            
+ssss       // bic.b #080h,P1OUT;ERR OFF
+            CLR   controlBit
+            RRA   R15
+            mov   R15,R13
+            and   #0700h, R13
+            SWPB  R13
+            RLA   R13
+            RLA   R13
+            ADD   R13,PC
+           
+           ;case
+            mov.b  R15,P10
+            jmp   LEEND;
+ToP11     
+            mov.b R15,P11
+            jmp   LEEND;
+ToP12     
+            mov.b R15,P12
+            jmp   LEEND;
+ToP13     
+            mov.b  R15,P13
+            jmp   LEEND;
+ToP14     
+            mov.b  R15,P14
+            jmp   LEEND;
+ToP15     
+            mov.b R15,P15
+            jmp   LEEND;
+ToP16     
+            mov.b R15,P16
+            jmp   LEEND;
+
+LEEND
+            clr R15
+lEnd        
+            clr.b   P2IFG   ; Flag clear
+
+            jmp OtherLOOP; return to main
+;-------------------------------------------
+;-------------------------------------------------------------------------------
+;           Interrupt Vectors
+;-------------------------------------------------------------------------------
+            ORG     0FFFEh                  ; MSP430 RESET Vector
+            DW      main                    ;
+            ORG  0FFF2h ;Timer int
+            DW  Mainloop
+          END
